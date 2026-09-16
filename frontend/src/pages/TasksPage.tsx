@@ -25,6 +25,7 @@ export default function TasksPage() {
   const [search, setSearch] = useState('')
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -50,6 +51,31 @@ export default function TasksPage() {
     return () => window.clearTimeout(timer)
   }, [loadTasks])
 
+  const closeModal = useCallback(() => {
+    setModalOpen(false)
+    setEditingId(null)
+    setForm(EMPTY_FORM)
+  }, [])
+
+  useEffect(() => {
+    if (!modalOpen) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') closeModal()
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [modalOpen, closeModal])
+
+  function openCreate() {
+    setEditingId(null)
+    setForm(EMPTY_FORM)
+    setModalOpen(true)
+  }
+
   function startEdit(task: Task) {
     setEditingId(task.id)
     setForm({
@@ -57,11 +83,7 @@ export default function TasksPage() {
       description: task.description ?? '',
       status: task.status,
     })
-  }
-
-  function resetForm() {
-    setEditingId(null)
-    setForm(EMPTY_FORM)
+    setModalOpen(true)
   }
 
   async function onSubmit(event: FormEvent) {
@@ -76,7 +98,7 @@ export default function TasksPage() {
         await api.createTask(user.token, form)
         notify('Tache creee', 'success')
       }
-      resetForm()
+      closeModal()
       await loadTasks()
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Echec de la sauvegarde'
@@ -92,7 +114,7 @@ export default function TasksPage() {
     try {
       await api.deleteTask(user.token, id)
       notify('Tache supprimee', 'success')
-      if (editingId === id) resetForm()
+      if (editingId === id) closeModal()
       await loadTasks()
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Echec de la suppression'
@@ -108,129 +130,155 @@ export default function TasksPage() {
           <h1 className="ui-title">Bonjour {user?.fullName}</h1>
           <p className="ui-subtitle">{user?.email}</p>
         </div>
-        <button type="button" onClick={logout} className="ui-btn ui-btn-ghost">
-          Se deconnecter
-        </button>
+        <div className="header-actions">
+          <button type="button" onClick={openCreate} className="ui-btn ui-btn-primary">
+            Nouvelle tache
+          </button>
+          <button type="button" onClick={logout} className="ui-btn ui-btn-ghost">
+            Se deconnecter
+          </button>
+        </div>
       </header>
 
-      <div className="tasks-layout">
-        <form onSubmit={onSubmit} className="ui-panel ui-stack anim-panel anim-delay-1">
-          <h2 className="ui-section-title">
-            {editingId ? 'Modifier la tache' : 'Nouvelle tache'}
-          </h2>
+      <section className="ui-panel anim-panel anim-delay-1">
+        <div className="tasks-toolbar">
+          <input
+            className="ui-input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher une tache..."
+          />
+          <select
+            className="ui-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'ALL')}
+          >
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <label className="ui-label">
-            <span>Titre</span>
-            <input
-              required
-              className="ui-input"
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              placeholder="Preparer la demo"
-            />
-          </label>
-
-          <label className="ui-label">
-            <span>Description</span>
-            <textarea
-              rows={4}
-              className="ui-textarea"
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Details optionnels"
-            />
-          </label>
-
-          <label className="ui-label">
-            <span>Statut</span>
-            <select
-              className="ui-select"
-              value={form.status}
-              onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as TaskStatus }))}
-            >
-              <option value="TODO">A faire</option>
-              <option value="IN_PROGRESS">En cours</option>
-              <option value="DONE">Termine</option>
-            </select>
-          </label>
-
-          <div className="ui-row">
-            <button type="submit" disabled={saving} className="ui-btn ui-btn-primary btn-grow">
-              {saving ? 'Enregistrement...' : editingId ? 'Mettre a jour' : 'Ajouter'}
-            </button>
-            {editingId && (
-              <button type="button" onClick={resetForm} className="ui-btn ui-btn-ghost">
-                Annuler
-              </button>
-            )}
-          </div>
-        </form>
-
-        <section className="ui-panel anim-panel anim-delay-2">
-          <div className="tasks-toolbar">
-            <input
-              className="ui-input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une tache..."
-            />
-            <select
-              className="ui-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'ALL')}
-            >
-              {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {loading ? (
-            <p className="ui-empty ui-loading">Chargement des taches...</p>
-          ) : tasks.length === 0 ? (
+        {loading ? (
+          <p className="ui-empty ui-loading">Chargement des taches...</p>
+        ) : tasks.length === 0 ? (
+          <div className="empty-state">
             <p className="ui-empty">Aucune tache pour le moment.</p>
-          ) : (
-            <ul className="ui-list">
-              {tasks.map((task, index) => (
-                <li
-                  key={task.id}
-                  className="ui-list-item anim-item"
-                  style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
-                >
-                  <div className="task-item-main">
-                    <div>
-                      <div className="ui-row row-center">
-                        <h3 className="task-title">{task.title}</h3>
-                        <span className="ui-badge">{STATUS_LABELS[task.status]}</span>
-                      </div>
-                      {task.description && (
-                        <p className="ui-subtitle">{task.description}</p>
-                      )}
-                      <p className="ui-subtitle task-meta">
-                        Mise a jour : {new Date(task.updatedAt).toLocaleString('fr-FR')}
-                      </p>
+            <button type="button" onClick={openCreate} className="ui-btn ui-btn-primary">
+              Creer ma premiere tache
+            </button>
+          </div>
+        ) : (
+          <ul className="ui-list">
+            {tasks.map((task, index) => (
+              <li
+                key={task.id}
+                className="ui-list-item anim-item"
+                style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+              >
+                <div className="task-item-main">
+                  <div>
+                    <div className="ui-row row-center">
+                      <h3 className="task-title">{task.title}</h3>
+                      <span className={`ui-badge badge-${task.status.toLowerCase()}`}>
+                        {STATUS_LABELS[task.status]}
+                      </span>
                     </div>
-                    <div className="task-item-actions">
-                      <button type="button" onClick={() => startEdit(task)} className="ui-btn ui-btn-ghost ui-btn-sm">
-                        Editer
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void onDelete(task.id)}
-                        className="ui-btn ui-btn-danger ui-btn-sm"
-                      >
-                        Supprimer
-                      </button>
-                    </div>
+                    {task.description && (
+                      <p className="ui-subtitle">{task.description}</p>
+                    )}
+                    <p className="ui-subtitle task-meta">
+                      Mise a jour : {new Date(task.updatedAt).toLocaleString('fr-FR')}
+                    </p>
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+                  <div className="task-item-actions">
+                    <button type="button" onClick={() => startEdit(task)} className="ui-btn ui-btn-ghost ui-btn-sm">
+                      Editer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void onDelete(task.id)}
+                      className="ui-btn ui-btn-danger ui-btn-sm"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {modalOpen && (
+        <div
+          className="modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal()
+          }}
+          role="presentation"
+        >
+          <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+            <div className="modal-header">
+              <h2 id="task-modal-title" className="ui-section-title">
+                {editingId ? 'Modifier la tache' : 'Nouvelle tache'}
+              </h2>
+              <button type="button" className="modal-close" onClick={closeModal} aria-label="Fermer">
+                ×
+              </button>
+            </div>
+
+            <form className="ui-stack" onSubmit={onSubmit}>
+              <label className="ui-label">
+                <span>Titre</span>
+                <input
+                  required
+                  autoFocus
+                  className="ui-input"
+                  value={form.title}
+                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                  placeholder="Preparer la demo"
+                />
+              </label>
+
+              <label className="ui-label">
+                <span>Description</span>
+                <textarea
+                  rows={4}
+                  className="ui-textarea"
+                  value={form.description}
+                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Details optionnels"
+                />
+              </label>
+
+              <label className="ui-label">
+                <span>Statut</span>
+                <select
+                  className="ui-select"
+                  value={form.status}
+                  onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as TaskStatus }))}
+                >
+                  <option value="TODO">A faire</option>
+                  <option value="IN_PROGRESS">En cours</option>
+                  <option value="DONE">Termine</option>
+                </select>
+              </label>
+
+              <div className="modal-actions">
+                <button type="button" onClick={closeModal} className="ui-btn ui-btn-ghost">
+                  Annuler
+                </button>
+                <button type="submit" disabled={saving} className="ui-btn ui-btn-primary btn-grow">
+                  {saving ? 'Enregistrement...' : editingId ? 'Mettre a jour' : 'Creer la tache'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -103,6 +103,14 @@ Exemple de tache:
 
 Statuts possibles: `TODO`, `IN_PROGRESS`, `DONE`.
 
+## Captures d'ecran
+
+![Page de connexion](docs/screenshots/01-login.png)
+
+![Liste des taches](docs/screenshots/02-tasks.png)
+
+![Modal nouvelle tache](docs/screenshots/03-modal.png)
+
 ## Docker Compose
 
 Prerequis: Docker Desktop.

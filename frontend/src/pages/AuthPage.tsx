@@ -45,9 +45,6 @@ export default function AuthPage({ mode }: AuthPageProps) {
           <h1 className="ui-title">
             Organisez vos taches, web et mobile, au meme rythme.
           </h1>
-          <p className="ui-subtitle">
-            Une API Spring Boot securisee par JWT, un frontend React moderne, et une sync prete pour Flutter.
-          </p>
         </section>
 
         <section className="auth-form">

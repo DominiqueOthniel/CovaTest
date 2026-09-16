@@ -495,6 +495,12 @@ a:hover {
   margin-bottom: 1.5rem;
 }
 
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .tasks-layout {
   display: grid;
   gap: 1.5rem;
@@ -517,6 +523,88 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0 1.5rem;
+}
+
+.empty-state .ui-empty {
+  padding-bottom: 0;
+}
+
+.badge-todo {
+  border-color: color-mix(in srgb, var(--muted) 50%, var(--line));
+}
+
+.badge-in_progress {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  color: var(--accent);
+  background: rgba(62, 207, 142, 0.1);
+}
+
+.badge-done {
+  border-color: color-mix(in srgb, var(--info) 55%, var(--line));
+  color: var(--info);
+  background: rgba(91, 184, 232, 0.1);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(6, 14, 11, 0.72);
+  backdrop-filter: blur(8px);
+  animation: fade-in var(--dur-fast) var(--ease-soft) both;
+}
+
+.modal-card {
+  width: min(440px, 100%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+  padding: 1.35rem;
+  animation: scale-in var(--dur) var(--ease-out) both;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: background var(--dur-fast) var(--ease-soft), color var(--dur-fast) var(--ease-soft);
+}
+
+.modal-close:hover {
+  background: var(--bg-soft);
+  color: var(--text);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
 }
 
 .auth-form .ui-title {
@@ -589,7 +677,7 @@ a:hover {
 
 @media (min-width: 1024px) {
   .tasks-layout {
-    grid-template-columns: 340px 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
