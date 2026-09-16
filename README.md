@@ -142,4 +142,4 @@ Pour un deploiement GCP Cloud Run (bonus):
 
 ## Auteur
 
-Candidat Task Manager - test de recrutement.
+Pougom Dominique
