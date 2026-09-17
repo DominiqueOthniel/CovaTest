@@ -1,0 +1,7 @@
+frontend/
+mobile/
+docs/
+.git/
+*.md
+**/node_modules/
+**/target/
