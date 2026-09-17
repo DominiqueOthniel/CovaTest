@@ -8,6 +8,8 @@ const String apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
   defaultValue: 'http://10.0.2.2:8080',
 );
+// Pour l APK / vrai device, passer l URL Railway du backend:
+// API_BASE_URL=https://TON-BACKEND.up.railway.app
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

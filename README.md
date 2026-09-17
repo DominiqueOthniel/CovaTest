@@ -134,11 +134,30 @@ Voir le dossier `mobile/` pour une application Flutter qui consomme la meme API 
 
 Le workflow GitHub Actions construit le backend et le frontend a chaque push/PR.
 
-Pour un deploiement GCP Cloud Run (bonus):
+## Deploiement Railway (alternative GCP)
 
-1. Builder et pousser les images Docker vers Artifact Registry
-2. Deployer le service backend puis le service frontend avec Cloud Run
-3. Pointer le frontend vers l URL publique de l API
+Voir le guide detaille: [docs/RAILWAY.md](docs/RAILWAY.md)
+
+Resume:
+1. Compte sur https://railway.app (login GitHub)
+2. Deployer 2 services depuis le repo: `backend/` puis `frontend/`
+3. `VITE_API_URL` du frontend = URL publique du backend
+4. Web + APK Flutter utilisent la meme URL API
+
+## Deploiement GCP Cloud Run (bonus)
+
+Prerequis: compte Google Cloud avec facturation, Google Cloud SDK (`gcloud`).
+
+```powershell
+gcloud auth login
+gcloud auth application-default login
+$env:GCP_PROJECT_ID = "TON_PROJECT_ID"
+$env:GCP_REGION = "europe-west1"
+cd C:\Users\USER\Desktop\RTest
+.\scripts\deploy-gcp.ps1
+```
+
+Note: l activation GCP peut etre bloquee avec une carte prepayee. Dans ce cas, utiliser Railway.
 
 ## Choix techniques
 
