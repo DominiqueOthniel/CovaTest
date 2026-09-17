@@ -1,45 +1,53 @@
 # Deploiement Railway (alternative a GCP)
 
+## Backend live
+API: https://covatest-production.up.railway.app  
+Health: https://covatest-production.up.railway.app/api/health
+
 ## Pourquoi Railway
 Google Cloud refuse souvent les cartes prepayees. Railway permet de deployer
-le meme stack (Spring Boot + React) avec une URL publique partagee web/mobile.
+le meme stack (Spring Boot + React + MySQL) avec une URL publique partagee web/mobile.
 
-## Etapes console
+## Backend (deja deploye)
+- Dockerfile racine du repo
+- Domain public genere (port 8080)
+- Variables minimales avant MySQL: `SPRING_PROFILES_ACTIVE=dev`, `JWT_SECRET=...`
 
-1. Cree un compte sur https://railway.app (GitHub login recommande)
-2. New Project → Deploy from GitHub repo → choisis `CovaTest` (ou ton repo)
-3. Dans le projet, cree **2 services** depuis le meme repo:
+## Ajouter MySQL (requis pour coller au sujet)
 
-### Service backend
-- Root Directory: `backend`
-- Builder: Dockerfile
-- Variables:
-  - `SPRING_PROFILES_ACTIVE` = `dev`
-  - `JWT_SECRET` = une longue chaine secrete
-- Generate Domain (Settings → Networking)
+1. Projet Railway → **+ New** → **Database** → **MySQL**
+2. Service backend → **Variables** → **Add Variable Reference** depuis MySQL:
+   - `MYSQLHOST` (ou `MYSQL_HOST`)
+   - `MYSQLPORT` (ou `MYSQL_PORT`)
+   - `MYSQLDATABASE` (ou `MYSQL_DATABASE`)
+   - `MYSQLUSER` (ou `MYSQL_USER`)
+   - `MYSQLPASSWORD` (ou `MYSQL_PASSWORD`)
+3. Mets `SPRING_PROFILES_ACTIVE` = `mysql`
+4. Redeploy le backend
+5. Reteste `/api/health` puis inscription
 
-Copie l URL publique backend, ex:
-`https://taskmanager-backend-production-xxxx.up.railway.app`
+## Frontend
 
-### Service frontend
-- Root Directory: `frontend`
-- Builder: Dockerfile
-- Variables de **build**:
-  - `VITE_API_URL` = URL backend (sans slash final)
-- Generate Domain
+1. **+ New** → GitHub repo (meme repo)
+2. Settings:
+   - Root Directory: `frontend`
+   - Builder: Dockerfile
+   - Dockerfile path: `Dockerfile`
+3. Variables:
+   - `VITE_API_URL` = `https://covatest-production.up.railway.app`
+4. Generate Domain (port 3000 si demande)
+5. Ouvre l URL frontend
 
-Ouvre l URL frontend → inscris-toi → cree une tache.
+Si le builder frontend echoue, utilise le Dockerfile racine alternatif:
+- Dockerfile path: `Dockerfile.frontend`
+- Root Directory: vide
+- Variable: `VITE_API_URL`
 
 ## Flutter / APK (meme backend)
 
-Dans `mobile/lib/main.dart`, la constante pointe deja vers le backend local.
-Pour l APK, lance avec l URL Railway:
-
 ```text
-API_BASE_URL = https://TON-BACKEND.up.railway.app
+API_BASE_URL=https://covatest-production.up.railway.app
 ```
-
-Ou modifie `defaultValue` dans `main.dart` avant le build release.
 
 ## Note pour le jury
 Le sujet demandait GCP Cloud Run. Le deploiement GCP est prepare

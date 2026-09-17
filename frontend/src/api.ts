@@ -1,6 +1,6 @@
 import type { AuthUser, Task, TaskPayload, TaskStatus } from './types'
 
-const API_BASE = import.meta.env.VITE_API_URL ?? ''
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
 class ApiError extends Error {
   status: number
@@ -16,6 +16,13 @@ async function request<T>(
   options: RequestInit = {},
   token?: string | null,
 ): Promise<T> {
+  if (!API_BASE && import.meta.env.PROD) {
+    throw new ApiError(
+      'VITE_API_URL manquant au build. Configure la variable sur Railway puis redeploy.',
+      500,
+    )
+  }
+
   const headers = new Headers(options.headers)
   headers.set('Content-Type', 'application/json')
   if (token) {
@@ -31,9 +38,21 @@ async function request<T>(
     return undefined as T
   }
 
-  const data = await response.json().catch(() => ({}))
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    throw new ApiError(
+      'Reponse API invalide. Verifie VITE_API_URL (URL du backend Railway).',
+      response.status || 502,
+    )
+  }
+
+  const data = await response.json().catch(() => null)
   if (!response.ok) {
-    throw new ApiError(data.message || 'Une erreur est survenue', response.status)
+    const message =
+      data && typeof data === 'object' && 'message' in data
+        ? String((data as { message: string }).message)
+        : 'Une erreur est survenue'
+    throw new ApiError(message, response.status)
   }
   return data as T
 }
@@ -51,12 +70,16 @@ export const api = {
       body: JSON.stringify(payload),
     })
   },
-  listTasks(token: string, status?: TaskStatus | 'ALL', search?: string) {
+  async listTasks(token: string, status?: TaskStatus | 'ALL', search?: string) {
     const params = new URLSearchParams()
     if (status && status !== 'ALL') params.set('status', status)
     if (search?.trim()) params.set('search', search.trim())
     const query = params.toString()
-    return request<Task[]>(`/api/tasks${query ? `?${query}` : ''}`, {}, token)
+    const data = await request<Task[]>(`/api/tasks${query ? `?${query}` : ''}`, {}, token)
+    if (!Array.isArray(data)) {
+      throw new ApiError('Format de liste de taches invalide', 502)
+    }
+    return data
   },
   createTask(token: string, payload: TaskPayload) {
     return request<Task>('/api/tasks', {

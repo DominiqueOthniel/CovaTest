@@ -136,13 +136,13 @@ Le workflow GitHub Actions construit le backend et le frontend a chaque push/PR.
 
 ## Deploiement Railway (alternative GCP)
 
-Voir le guide detaille: [docs/RAILWAY.md](docs/RAILWAY.md)
+Guide: [docs/RAILWAY.md](docs/RAILWAY.md)
 
-Resume:
-1. Compte sur https://railway.app (login GitHub)
-2. Deployer 2 services depuis le repo: `backend/` puis `frontend/`
-3. `VITE_API_URL` du frontend = URL publique du backend
-4. Web + APK Flutter utilisent la meme URL API
+Backend deja en ligne:
+- API: https://covatest-production.up.railway.app
+- Health: https://covatest-production.up.railway.app/api/health
+
+Prochaines etapes: ajouter MySQL Railway, deployer le frontend, pointer Flutter vers la meme URL API.
 
 ## Deploiement GCP Cloud Run (bonus)
 

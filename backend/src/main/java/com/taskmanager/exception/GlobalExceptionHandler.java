@@ -40,7 +40,12 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest request) {
-		return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne du serveur", request.getRequestURI());
+		Throwable root = ex;
+		while (root.getCause() != null && root.getCause() != root) {
+			root = root.getCause();
+		}
+		String details = root.getClass().getSimpleName() + ": " + root.getMessage();
+		return build(HttpStatus.INTERNAL_SERVER_ERROR, details, request.getRequestURI());
 	}
 
 	private ResponseEntity<ApiError> build(HttpStatus status, String message, String path) {

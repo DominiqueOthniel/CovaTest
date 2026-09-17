@@ -34,7 +34,7 @@ export default function TasksPage() {
     setLoading(true)
     try {
       const data = await api.listTasks(user.token, statusFilter, search)
-      setTasks(data)
+      setTasks(Array.isArray(data) ? data : [])
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Impossible de charger les taches'
       notify(message, 'error')
