@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Cova">
+  <defs>
+    <radialGradient id="covaOrange" cx="42%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#ff9a3c"/>
+      <stop offset="55%" stop-color="#f26b1d"/>
+      <stop offset="100%" stop-color="#e25510"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(64 64)">
+    <path fill="url(#covaOrange)" d="M0-52 L24-46 L46-24 L52 0 L46 24 L24 46 L0 52 L-24 46 L-46 24 L-52 0 L-46-24 L-24-46 Z"/>
+    <g stroke="#fff7e8" stroke-width="2.2" stroke-linecap="round">
+      <line x1="0" y1="0" x2="0" y2="-50"/>
+      <line x1="0" y1="0" x2="35" y2="-35"/>
+      <line x1="0" y1="0" x2="50" y2="0"/>
+      <line x1="0" y1="0" x2="35" y2="35"/>
+      <line x1="0" y1="0" x2="0" y2="50"/>
+      <line x1="0" y1="0" x2="-35" y2="35"/>
+      <line x1="0" y1="0" x2="-50" y2="0"/>
+      <line x1="0" y1="0" x2="-35" y2="-35"/>
+    </g>
+    <circle cx="0" cy="0" r="4.5" fill="#fff7e8"/>
+  </g>
+</svg>

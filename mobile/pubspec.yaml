@@ -1,5 +1,5 @@
-name: task_manager_mobile
-description: Client Flutter Task Manager (bonus)
+name: covatask_mobile
+description: CovaTask mobile client (Flutter bonus)
 publish_to: "none"
 version: 1.0.0+1
 
@@ -19,3 +19,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/cova-logo.svg
+    - assets/cova-icon.png

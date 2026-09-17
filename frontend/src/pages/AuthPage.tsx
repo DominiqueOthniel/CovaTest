@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../api'
+import BrandLogo from '../components/BrandLogo'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
@@ -41,20 +42,27 @@ export default function AuthPage({ mode }: AuthPageProps) {
         <section className="auth-hero">
           <div className="auth-hero-glow auth-hero-glow-a" />
           <div className="auth-hero-glow auth-hero-glow-b" />
-          <p className="ui-eyebrow">Task Manager</p>
+          <div className="brand-lockup">
+            <BrandLogo className="brand-logo-lg" />
+            <p className="ui-eyebrow">CovaTask</p>
+          </div>
           <h1 className="ui-title">
             Organisez vos taches, web et mobile, au meme rythme.
           </h1>
+          <p className="ui-subtitle">
+            Une API Spring Boot securisee par JWT, un frontend React moderne, et une sync prete pour Flutter.
+          </p>
         </section>
 
         <section className="auth-form">
-          <h2 className="ui-title">
+          <BrandLogo />
+          <h2 className="ui-title" style={{ marginTop: '1rem' }}>
             {mode === 'login' ? 'Connexion' : 'Creer un compte'}
           </h2>
           <p className="ui-subtitle">
             {mode === 'login'
-              ? 'Accedez a votre liste de taches.'
-              : 'Inscrivez-vous pour demarrer.'}
+              ? 'Accedez a votre liste de taches CovaTask.'
+              : 'Inscrivez-vous pour demarrer sur CovaTask.'}
           </p>
 
           <form className="ui-stack auth-form-stack" onSubmit={onSubmit}>

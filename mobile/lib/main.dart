@@ -9,7 +9,7 @@ const String apiBaseUrl = String.fromEnvironment(
   defaultValue: 'http://10.0.2.2:8080',
 );
 // Pour l APK / vrai device, passer l URL Railway du backend:
-// API_BASE_URL=https://TON-BACKEND.up.railway.app
+// API_BASE_URL=https://covatest-production.up.railway.app
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +22,7 @@ class TaskManagerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Task Manager',
+      title: 'CovaTask',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2AA86F)),
         useMaterial3: true,
@@ -134,7 +134,9 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              const Text('Task Manager', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              Image.asset('assets/cova-icon.png', height: 48),
+              const SizedBox(height: 16),
+              const Text('CovaTask', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               const Text('Connectez-vous pour gerer vos taches'),
               const SizedBox(height: 32),
@@ -238,7 +240,7 @@ class _TasksPageState extends State<TasksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mes taches'),
+        title: const Text('CovaTask'),
         actions: [
           IconButton(onPressed: widget.onLogout, icon: const Icon(Icons.logout)),
         ],

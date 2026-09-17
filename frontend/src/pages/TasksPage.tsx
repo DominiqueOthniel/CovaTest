@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { ApiError, api } from '../api'
+import BrandLogo from '../components/BrandLogo'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import type { Task, TaskStatus } from '../types'
@@ -125,10 +126,13 @@ export default function TasksPage() {
   return (
     <div className="ui-page anim-page">
       <header className="ui-panel tasks-header anim-panel">
-        <div>
-          <p className="ui-eyebrow">Task Manager</p>
-          <h1 className="ui-title">Bonjour {user?.fullName}</h1>
-          <p className="ui-subtitle">{user?.email}</p>
+        <div className="brand-lockup">
+          <BrandLogo />
+          <div>
+            <p className="ui-eyebrow">CovaTask</p>
+            <h1 className="ui-title">Bonjour {user?.fullName}</h1>
+            <p className="ui-subtitle">{user?.email}</p>
+          </div>
         </div>
         <div className="header-actions">
           <button type="button" onClick={openCreate} className="ui-btn ui-btn-primary">

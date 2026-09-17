@@ -170,6 +170,25 @@ a:hover {
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.34);
 }
 
+.brand-logo {
+  display: block;
+  height: 2.35rem;
+  width: auto;
+  max-width: 56px;
+  object-fit: contain;
+}
+
+.brand-logo-lg {
+  height: 3.25rem;
+  max-width: 72px;
+}
+
+.brand-lockup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
 .ui-eyebrow {
   margin: 0;
   font-size: 0.8rem;
@@ -177,6 +196,7 @@ a:hover {
   text-transform: uppercase;
   color: var(--accent);
 }
+
 
 .ui-title {
   margin: 0.5rem 0 0;
