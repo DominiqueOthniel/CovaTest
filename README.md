@@ -1,14 +1,24 @@
-# Task Manager
+# CovaTask
 
-Mini application de gestion de taches realisee pour le test de recrutement.
+Application de gestion de taches realisee pour le test de recrutement Cova Africa.
+
+## Demo live
+
+- Web: https://covatask.up.railway.app/login
+- API: https://covatest-production.up.railway.app
+- Health: https://covatest-production.up.railway.app/api/health
+
+Repo: https://github.com/DominiqueOthniel/CovaTest
 
 ## Stack
 
 - Backend: Java 17, Spring Boot 3.3, Spring Security JWT, Spring Data JPA
 - Base de donnees: H2 (profil `dev`) ou MySQL (profil `mysql`)
 - Frontend: React, Vite, TypeScript, Tailwind CSS
+- Mobile (bonus): Flutter (meme API JWT)
 - Conteneurisation: Docker, docker-compose
 - CI: GitHub Actions
+- Deploiement: Railway (alternative a GCP Cloud Run)
 
 ## Architecture
 
@@ -18,6 +28,7 @@ mobile (Flutter bonus)  ---------|
 ```
 
 Le token JWT est stocke cote web dans `localStorage` et envoye via `Authorization: Bearer`.
+Web et mobile consomment la meme API, donc les donnees sont synchronisees.
 
 ## Structure du depot
 
@@ -26,6 +37,7 @@ backend/     API REST Spring Boot
 frontend/    Application web React
 mobile/      Application Flutter (bonus)
 docker-compose.yml
+docs/        Guides Railway et captures
 ```
 
 ## Demarrage local (sans Docker)
@@ -80,6 +92,7 @@ Ouvrir `http://localhost:5173`. Le proxy Vite redirige `/api` vers le backend.
 - `POST /api/tasks` creation
 - `PUT /api/tasks/{id}` modification
 - `DELETE /api/tasks/{id}` suppression
+- `GET /api/health` sante
 
 Exemple d inscription:
 
@@ -129,20 +142,43 @@ Services:
 ## Mobile Flutter (bonus)
 
 Voir le dossier `mobile/` pour une application Flutter qui consomme la meme API JWT.
+Par defaut, le client pointe vers l API Railway live.
+
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
+
+## Tests
+
+Backend (MockMvc, auth + CRUD taches + isolation utilisateur):
+
+```bash
+cd backend
+./mvnw test
+```
+
+Frontend (client API avec Vitest):
+
+```bash
+cd frontend
+npm test
+```
 
 ## CI/CD
 
-Le workflow GitHub Actions construit le backend et le frontend a chaque push/PR.
+Le workflow GitHub Actions execute les tests puis construit le backend et le frontend a chaque push/PR.
 
-## Deploiement Railway (alternative GCP)
+## Deploiement live (Railway)
 
-Guide: [docs/RAILWAY.md](docs/RAILWAY.md)
+Guide detaille: [docs/RAILWAY.md](docs/RAILWAY.md)
 
-Backend deja en ligne:
+- Web: https://covatask.up.railway.app
 - API: https://covatest-production.up.railway.app
 - Health: https://covatest-production.up.railway.app/api/health
-
-Prochaines etapes: ajouter MySQL Railway, deployer le frontend, pointer Flutter vers la meme URL API.
+- Frontend build: `VITE_API_URL` pointe vers l API
+- MySQL: profil `mysql` (Docker Compose local ou base Railway)
 
 ## Deploiement GCP Cloud Run (bonus)
 
@@ -157,7 +193,7 @@ cd C:\Users\USER\Desktop\RTest
 .\scripts\deploy-gcp.ps1
 ```
 
-Note: l activation GCP peut etre bloquee avec une carte prepayee. Dans ce cas, utiliser Railway.
+Note: l activation GCP peut etre bloquee avec une carte prepayee. Dans ce cas, utiliser Railway (demo live deja disponible).
 
 ## Choix techniques
 
@@ -165,7 +201,7 @@ Note: l activation GCP peut etre bloquee avec une carte prepayee. Dans ce cas, u
 - Isolation des taches par utilisateur proprietaire
 - Filtrage serveur (statut + recherche titre/description)
 - H2 pour demarrer vite sans installer MySQL
-- Nginx reverse proxy en prod pour unifier frontend et API
+- Railway pour livrer une demo publique (GCP anticipe via script, bloque par moyen de paiement)
 
 ## Auteur
 

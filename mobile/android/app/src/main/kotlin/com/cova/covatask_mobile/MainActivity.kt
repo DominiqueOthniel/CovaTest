@@ -1,0 +1,5 @@
+package com.cova.covatask_mobile
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()

@@ -18,10 +18,10 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
-      - name: Build backend
+      - name: Test and package backend
         run: |
           chmod +x mvnw
-          ./mvnw -B -DskipTests package
+          ./mvnw -B test package
 
   frontend:
     runs-on: ubuntu-latest
@@ -37,5 +37,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm install
+      - name: Test frontend
+        run: npm test
       - name: Build frontend
         run: npm run build

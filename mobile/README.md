@@ -1,23 +1,20 @@
 # CovaTask Mobile (bonus)
 
-Application Flutter CovaTask consommant la meme API Spring Boot.
+Application Flutter CovaTask alignee sur le frontend web (theme, auth, CRUD, filtres).
+Consomme la meme API Spring Boot.
 
 ## Lancer
 
-1. Demarrer le backend (local ou Railway)
-2. Depuis `mobile/`:
-
 ```bash
+cd mobile
 flutter pub get
-flutter run
+flutter run -d chrome
 ```
 
-Par defaut l URL API pointe vers `http://10.0.2.2:8080` (emulateur Android).
+URL API par defaut : `https://covatest-production.up.railway.app`
 
-Pour Railway:
+Backend local (emulateur Android) :
 
 ```text
-API_BASE_URL=https://covatest-production.up.railway.app
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
-
-Ou modifier `defaultValue` dans `lib/main.dart`.

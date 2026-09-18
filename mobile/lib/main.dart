@@ -1,15 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'http://10.0.2.2:8080',
-);
-// Pour l APK / vrai device, passer l URL Railway du backend:
-// API_BASE_URL=https://covatest-production.up.railway.app
+import 'api/api_client.dart';
+import 'pages/auth_page.dart';
+import 'pages/tasks_page.dart';
+import 'theme/cova_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,10 +18,8 @@ class TaskManagerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CovaTask',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2AA86F)),
-        useMaterial3: true,
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: buildCovaTheme(),
       home: const AuthGate(),
     );
   }
@@ -40,8 +33,8 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  String? token;
-  bool loading = true;
+  AuthSession? _session;
+  bool _loading = true;
 
   @override
   void initState() {
@@ -51,242 +44,45 @@ class _AuthGateState extends State<AuthGate> {
 
   Future<void> _restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final email = prefs.getString('email');
+    final fullName = prefs.getString('fullName');
     setState(() {
-      token = prefs.getString('token');
-      loading = false;
+      if (token != null && email != null && fullName != null) {
+        _session = AuthSession(token: token, email: email, fullName: fullName);
+      }
+      _loading = false;
     });
   }
 
-  Future<void> _onLoggedIn(String nextToken) async {
+  Future<void> _onLoggedIn(AuthSession session) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', nextToken);
-    setState(() => token = nextToken);
+    await prefs.setString('token', session.token);
+    await prefs.setString('email', session.email);
+    await prefs.setString('fullName', session.fullName);
+    setState(() => _session = session);
   }
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
-    setState(() => token = null);
+    await prefs.remove('email');
+    await prefs.remove('fullName');
+    setState(() => _session = null);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (token == null) {
-      return LoginPage(onLoggedIn: _onLoggedIn);
-    }
-    return TasksPage(token: token!, onLogout: _logout);
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, required this.onLoggedIn});
-
-  final Future<void> Function(String token) onLoggedIn;
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  String? error;
-  bool loading = false;
-
-  Future<void> _login() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/api/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': emailController.text.trim(),
-          'password': passwordController.text,
-        }),
+    if (_loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: CovaColors.accent),
+        ),
       );
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
-        await widget.onLoggedIn(body['token'] as String);
-      } else {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
-        setState(() => error = body['message']?.toString() ?? 'Echec de connexion');
-      }
-    } catch (_) {
-      setState(() => error = 'Impossible de joindre l API');
-    } finally {
-      setState(() => loading = false);
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 40),
-              Image.asset('assets/cova-icon.png', height: 48),
-              const SizedBox(height: 16),
-              const Text('CovaTask', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text('Connectez-vous pour gerer vos taches'),
-              const SizedBox(height: 32),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Mot de passe', border: OutlineInputBorder()),
-              ),
-              if (error != null) ...[
-                const SizedBox(height: 12),
-                Text(error!, style: const TextStyle(color: Colors.red)),
-              ],
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: loading ? null : _login,
-                child: Text(loading ? 'Connexion...' : 'Se connecter'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class TasksPage extends StatefulWidget {
-  const TasksPage({super.key, required this.token, required this.onLogout});
-
-  final String token;
-  final Future<void> Function() onLogout;
-
-  @override
-  State<TasksPage> createState() => _TasksPageState();
-}
-
-class _TasksPageState extends State<TasksPage> {
-  final titleController = TextEditingController();
-  List<dynamic> tasks = [];
-  bool loading = true;
-  String? error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTasks();
-  }
-
-  Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${widget.token}',
-      };
-
-  Future<void> _loadTasks() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
-    try {
-      final response = await http.get(Uri.parse('$apiBaseUrl/api/tasks'), headers: _headers);
-      if (response.statusCode == 200) {
-        setState(() => tasks = jsonDecode(response.body) as List<dynamic>);
-      } else {
-        setState(() => error = 'Impossible de charger les taches');
-      }
-    } catch (_) {
-      setState(() => error = 'Impossible de joindre l API');
-    } finally {
-      setState(() => loading = false);
+    if (_session == null) {
+      return AuthPage(onLoggedIn: _onLoggedIn);
     }
-  }
-
-  Future<void> _createTask() async {
-    final title = titleController.text.trim();
-    if (title.isEmpty) return;
-    final response = await http.post(
-      Uri.parse('$apiBaseUrl/api/tasks'),
-      headers: _headers,
-      body: jsonEncode({
-        'title': title,
-        'description': '',
-        'status': 'TODO',
-      }),
-    );
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      titleController.clear();
-      await _loadTasks();
-    }
-  }
-
-  Future<void> _deleteTask(int id) async {
-    await http.delete(Uri.parse('$apiBaseUrl/api/tasks/$id'), headers: _headers);
-    await _loadTasks();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('CovaTask'),
-        actions: [
-          IconButton(onPressed: widget.onLogout, icon: const Icon(Icons.logout)),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nouvelle tache',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(onPressed: _createTask, child: const Text('Ajouter')),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (loading) const CircularProgressIndicator(),
-            if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
-            if (!loading)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = tasks[index] as Map<String, dynamic>;
-                    return ListTile(
-                      title: Text(task['title']?.toString() ?? ''),
-                      subtitle: Text(task['status']?.toString() ?? ''),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _deleteTask(task['id'] as int),
-                      ),
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+    return TasksPage(session: _session!, onLogout: _logout);
   }
 }
