@@ -118,11 +118,19 @@ Statuts possibles: `TODO`, `IN_PROGRESS`, `DONE`.
 
 ## Captures d'ecran
 
+### Web
+
 ![Page de connexion](docs/screenshots/01-login.png)
 
 ![Liste des taches](docs/screenshots/02-tasks.png)
 
 ![Modal nouvelle tache](docs/screenshots/03-modal.png)
+
+### Mobile Flutter
+
+![CovaTask sur emulateur Android](docs/screenshots/05-flutter-emulator.png)
+
+![CovaTask sur telephone Android](docs/screenshots/06-flutter-phone.jpg)
 
 ## Docker Compose
 
@@ -141,8 +149,11 @@ Services:
 
 ## Mobile Flutter (bonus)
 
-Voir le dossier `mobile/` pour une application Flutter qui consomme la meme API JWT.
-Par defaut, le client pointe vers l API Railway live.
+Application Flutter dans `mobile/` qui consomme la meme API JWT que le web
+(sync des taches sur le meme backend Railway).
+
+Testee sur emulateur Android (Pixel) et telephone Android. APK release generable via
+`flutter build apk --release`.
 
 ```bash
 cd mobile
@@ -180,9 +191,30 @@ Guide detaille: [docs/RAILWAY.md](docs/RAILWAY.md)
 - Frontend build: `VITE_API_URL` pointe vers l API
 - MySQL: profil `mysql` (Docker Compose local ou base Railway)
 
-## Deploiement GCP Cloud Run (bonus)
+## Deploiement cloud (bonus)
 
-Prerequis: compte Google Cloud avec facturation, Google Cloud SDK (`gcloud`).
+Le sujet proposait un lien deploye via **Cloud Run** ou **Firebase Hosting**.
+
+### Pourquoi pas Firebase Hosting
+
+Firebase Hosting est pense pour servir un frontend (et l ecosysteme Firebase).
+Ce projet repose sur une **API Spring Boot + MySQL + JWT**. Heberger seulement le
+front sur Firebase aurait laisse le backend hors du deploiement, donc hors sujet
+pour une demo full stack complete.
+
+### Pourquoi pas Cloud Run (GCP) en live
+
+Cloud Run etait le choix le plus aligne (containers Docker).
+Dockerfiles + script `scripts/deploy-gcp.ps1` sont prets.
+L activation Google Cloud a ete bloquee (carte prepayee refusee).
+
+### Pourquoi Railway
+
+Railway permet de deployer le meme besoin technique :
+frontend React + API Spring Boot + MySQL + URL publique.
+Demo live : https://covatask.up.railway.app/login
+
+Pour reessayer GCP plus tard (carte bancaire classique) :
 
 ```powershell
 gcloud auth login
@@ -193,15 +225,15 @@ cd C:\Users\USER\Desktop\RTest
 .\scripts\deploy-gcp.ps1
 ```
 
-Note: l activation GCP peut etre bloquee avec une carte prepayee. Dans ce cas, utiliser Railway (demo live deja disponible).
-
 ## Choix techniques
 
 - JWT stateless pour securiser les routes `/api/tasks`
 - Isolation des taches par utilisateur proprietaire
 - Filtrage serveur (statut + recherche titre/description)
 - H2 pour demarrer vite sans installer MySQL
-- Railway pour livrer une demo publique (GCP anticipe via script, bloque par moyen de paiement)
+- Firebase Hosting ecarte car inadapte au stack Spring Boot + MySQL
+- Cloud Run anticipe (Docker + script GCP), bloque par moyen de paiement
+- Railway choisi pour livrer une demo publique complete
 
 ## Auteur
 
